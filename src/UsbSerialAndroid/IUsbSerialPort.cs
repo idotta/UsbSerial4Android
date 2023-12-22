@@ -42,135 +42,108 @@ public enum ControlLine
     RI
 }
 
-/**
- * Interface for a single serial port.
- *
- * @author mike wakerly (opensource@hoho.com)
- */
-
+/// <summary>
+/// Interface for a single serial port.
+/// </summary>
 public interface IUsbSerialPort : IDisposable
 {
-    /**
-     * Returns the driver used by this port.
-     */
-
+    /// <summary>
+    /// Returns the driver used by this port.
+    /// </summary>
+    /// <returns></returns>
     IUsbSerialDriver GetDriver();
 
-    /**
-     * Returns the currently-bound USB device.
-     */
-
+    /// <summary>
+    /// Returns the currently-bound USB device.
+    /// </summary>
+    /// <returns></returns>
     UsbDevice GetDevice();
 
-    /**
-     * Port number within driver.
-     */
-
+    /// <summary>
+    /// Port number within driver.
+    /// </summary>
+    /// <returns></returns>
     int GetPortNumber();
 
-    /**
-     * Returns the write endpoint.
-     * @return write endpoint
-     */
-
+    /// <summary>
+    /// Returns the write endpoint.
+    /// </summary>
+    /// <returns></returns>
     UsbEndpoint? GetWriteEndpoint();
 
-    /**
-     * Returns the read endpoint.
-     * @return read endpoint
-     */
-
+    /// <summary>
+    /// Returns the read endpoint.
+    /// </summary>
+    /// <returns></returns>
     UsbEndpoint? GetReadEndpoint();
 
-    /**
-     * The serial number of the underlying UsbDeviceConnection, or {@code null}.
-     *
-     * @return value from {@link UsbDeviceConnection#getSerial()}
-     * @throws SecurityException starting with target SDK 29 (Android 10) if permission for USB device is not granted
-     */
-
+    /// <summary>
+    /// The serial number of the underlying UsbDeviceConnection, or {@code null}.
+    /// </summary>
+    /// <returns>value from {@link UsbDeviceConnection#getSerial()}</returns>
+    /// /// <exception cref="SecurityException">SecurityException starting with target SDK 29 (Android 10) if permission for USB device is not granted</exception>
     string GetSerial();
 
-    /**
-     * Opens and initializes the port. Upon success, caller must ensure that
-     * {@link #close()} is eventually called.
-     *
-     * @param connection an open device connection, acquired with
-     *                   {@link UsbManager#openDevice(android.hardware.usb.UsbDevice)}
-     * @throws IOException on error opening or initializing the port.
-     */
-
+    /// <summary>
+    /// Opens and initializes the port. Upon success, caller must ensure that
+    /// {@link #close()} is eventually called.
+    /// </summary>
+    /// <param name="connection">an open device connection, acquired with {@link UsbManager#openDevice(android.hardware.usb.UsbDevice)}</param>
+    /// <exception cref="IOException">on error opening or initializing the port.</exception>
     void Open(UsbDeviceConnection connection);
 
-    /**
-     * Closes the port and {@link UsbDeviceConnection}
-     *
-     * @throws IOException on error closing the port.
-     */
-
+    /// <summary>
+    /// Closes the port and {@link UsbDeviceConnection}
+    /// </summary>
+    /// <exception cref="IOException">on error closing the port.</exception>
     void Close();
 
-    /**
-     * Reads as many bytes as possible into the destination buffer.
-     *
-     * @param dest the destination byte buffer
-     * @param timeout the timeout for reading in milliseconds, 0 is infinite
-     * @return the actual number of bytes read
-     * @throws IOException if an error occurred during reading
-     */
-
+    /// <summary>
+    /// Reads as many bytes as possible into the destination buffer.
+    /// </summary>
+    /// <param name="dest">the destination byte buffer</param>
+    /// <param name="timeout">the timeout for reading in milliseconds, 0 is infinite</param>
+    /// <returns>the actual number of bytes read</returns>
+    /// <exception cref="IOException">if an error occurred during reading</exception>
     int Read(byte[] dest, int timeout);
 
-    /**
-     * Reads bytes with specified length into the destination buffer.
-     *
-     * @param dest the destination byte buffer
-     * @param length the maximum length of the data to read
-     * @param timeout the timeout for reading in milliseconds, 0 is infinite
-     * @return the actual number of bytes read
-     * @throws IOException if an error occurred during reading
-     */
-
+    /// <summary>
+    /// Reads bytes with specified length into the destination buffer.
+    /// </summary>
+    /// <param name="dest">the destination byte buffer</param>
+    /// <param name="length">the maximum length of the data to read</param>
+    /// <param name="timeout">the timeout for reading in milliseconds, 0 is infinite</param>
+    /// <returns>the actual number of bytes read</returns>
+    /// <exception cref="IOException">if an error occurred during reading</exception>
     int Read(byte[] dest, int length, int timeout);
 
-    /**
-     * Writes as many bytes as possible from the source buffer.
-     *
-     * @param src the source byte buffer
-     * @param timeout the timeout for writing in milliseconds, 0 is infinite
-     * @throws SerialTimeoutException if timeout reached before sending all data.
-     *                                ex.bytesTransferred may contain bytes transferred
-     * @throws IOException if an error occurred during writing
-     */
-
+    /// <summary>
+    /// Writes as many bytes as possible from the source buffer.
+    /// </summary>
+    /// <param name="src">the source byte buffer</param>
+    /// <param name="timeout">the timeout for writing in milliseconds, 0 is infinite</param>
+    /// <exception cref="SerialTimeoutException">if timeout reached before sending all data. ex.bytesTransferred may contain bytes transferred</exception>
+    /// <exception cref="IOException">if an error occurred during writing</exception>
     void Write(byte[] src, int timeout);
 
-    /**
-     * Writes bytes with specified length from the source buffer.
-     *
-     * @param src the source byte buffer
-     * @param length the length of the data to write
-     * @param timeout the timeout for writing in milliseconds, 0 is infinite
-     * @throws SerialTimeoutException if timeout reached before sending all data.
-     *                                ex.bytesTransferred may contain bytes transferred
-     * @throws IOException if an error occurred during writing
-     */
-
+    /// <summary>
+    /// Writes bytes with specified length from the source buffer.
+    /// </summary>
+    /// <param name="src">the source byte buffer</param>
+    /// <param name="length">the length of the data to write</param>
+    /// <param name="timeout">the timeout for writing in milliseconds, 0 is infinite</param>
+    /// <exception cref="IOException">if an error occurred during writing</exception>
     void Write(byte[] src, int length, int timeout);
 
-    /**
-     * Sets various serial port parameters.
-     *
-     * @param baudRate baud rate as an integer, for example {@code 115200}.
-     * @param dataBits one of {@link #DATABITS_5}, {@link #DATABITS_6},
-     *                 {@link #DATABITS_7}, or {@link #DATABITS_8}.
-     * @param stopBits one of {@link #STOPBITS_1}, {@link #STOPBITS_1_5}, or {@link #STOPBITS_2}.
-     * @param parity one of {@link #PARITY_NONE}, {@link #PARITY_ODD},
-     *               {@link #PARITY_EVEN}, {@link #PARITY_MARK}, or {@link #PARITY_SPACE}.
-     * @throws IOException on error setting the port parameters
-     * @throws UnsupportedOperationException if values are not supported by a specific device
-     */
-
+    /// <summary>
+    /// Sets various serial port parameters.
+    /// </summary>
+    /// <param name="baudRate">baud rate as an integer, for example {@code 115200}.</param>
+    /// <param name="dataBits">one of {@link #DATABITS_5}, {@link #DATABITS_6}, {@link #DATABITS_7}, or {@link #DATABITS_8}.</param>
+    /// <param name="stopBits">one of {@link #STOPBITS_1}, {@link #STOPBITS_1_5}, or {@link #STOPBITS_2}.</param>
+    /// <param name="parity">one of {@link #PARITY_NONE}, {@link #PARITY_ODD}, {@link #PARITY_EVEN}, {@link #PARITY_MARK}, or {@link #PARITY_SPACE}.</param>
+    /// <exception cref="IOException">on error setting the port parameters</exception>
+    /// <exception cref="UnsupportedOperationException">if values are not supported by a specific device</exception>
     void SetParameters(int baudRate, DataBits dataBits, StopBits stopBits, Parity parity);
 
     /**
