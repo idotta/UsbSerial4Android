@@ -207,7 +207,7 @@ public abstract class CommonUsbSerialPort : IUsbSerialPort
             throw new IOException("USB get_status request failed");
     }
 
-    public int Read(byte[] dest, int timeout)
+    public virtual int Read(byte[] dest, int timeout)
     {
         if (dest.Length <= 0)
         {
@@ -217,12 +217,12 @@ public abstract class CommonUsbSerialPort : IUsbSerialPort
         return Read(dest, dest.Length, timeout);
     }
 
-    public int Read(byte[] dest, int length, int timeout)
+    public virtual int Read(byte[] dest, int length, int timeout)
     {
         return Read(dest, length, timeout, true);
     }
 
-    protected int Read(byte[] dest, int length, int timeout, bool testConnection)
+    protected virtual int Read(byte[] dest, int length, int timeout, bool testConnection)
 
     {
         if (_connection == null || _usbRequest == null)

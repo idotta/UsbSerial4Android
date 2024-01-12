@@ -6,7 +6,6 @@
  */
 
 using Android.Hardware.Usb;
-using Android.Util;
 using UsbSerialAndroid.Utils;
 
 namespace UsbSerialAndroid.Drivers;
@@ -103,10 +102,10 @@ public class FtdiSerialDriver : IUsbSerialDriver
         private const int RESET_PURGE_RX = 1;
         private const int RESET_PURGE_TX = 2;
 
-        private bool baudRateWithPort = false;
-        private bool dtr = false;
-        private bool rts = false;
-        private int breakConfig = 0;
+        private bool _baudRateWithPort;
+        private bool _dtr;
+        private bool _rts;
+        private int _breakConfig;
 
         public FtdiSerialPort(FtdiSerialDriver owningDriver, UsbDevice device, int portNumber) : base(device, portNumber)
         {
@@ -140,8 +139,8 @@ public class FtdiSerialDriver : IUsbSerialDriver
                 throw new IOException("Reset failed: result=" + result);
             }
             result = _connection.ControlTransfer((UsbAddressing)REQTYPE_HOST_TO_DEVICE, MODEM_CONTROL_REQUEST,
-                            (dtr ? MODEM_CONTROL_DTR_ENABLE : MODEM_CONTROL_DTR_DISABLE) |
-                                    (rts ? MODEM_CONTROL_RTS_ENABLE : MODEM_CONTROL_RTS_DISABLE),
+                            (_dtr ? MODEM_CONTROL_DTR_ENABLE : MODEM_CONTROL_DTR_DISABLE) |
+                                    (_rts ? MODEM_CONTROL_RTS_ENABLE : MODEM_CONTROL_RTS_DISABLE),
                             _portNumber + 1, null, 0, USB_WRITE_TIMEOUT_MILLIS);
             if (result != 0)
             {
@@ -149,14 +148,13 @@ public class FtdiSerialDriver : IUsbSerialDriver
             }
 
             // _device.getVersion() would require API 23
-            byte[]
-            rawDescriptors = _connection.GetRawDescriptors();
+            byte[] rawDescriptors = _connection.GetRawDescriptors();
             if (rawDescriptors == null || rawDescriptors.Length < 14)
             {
                 throw new IOException("Could not get device descriptors");
             }
             int deviceType = rawDescriptors[13];
-            baudRateWithPort = deviceType == 7 || deviceType == 8 || deviceType == 9 // ...H devices
+            _baudRateWithPort = deviceType == 7 || deviceType == 8 || deviceType == 9 // ...H devices
                             || _device.InterfaceCount > 1; // FT2232C
         }
 
@@ -166,10 +164,10 @@ public class FtdiSerialDriver : IUsbSerialDriver
             {
                 _connection.ReleaseInterface(_device.GetInterface(_portNumber));
             }
-            catch (Exception ignored) { }
+            catch (Exception) { /* ignored */ }
         }
 
-        public new int Read(byte[] dest, int timeout)
+        public override int Read(byte[] dest, int timeout)
         {
             if (dest.Length <= READ_HEADER_LENGTH)
             {
@@ -181,7 +179,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
             return Read(dest, dest.Length, timeout);
         }
 
-        public new int Read(byte[] dest, int length, int timeout)
+        public override int Read(byte[] dest, int length, int timeout)
         {
             if (length <= READ_HEADER_LENGTH)
             {
@@ -210,6 +208,24 @@ public class FtdiSerialDriver : IUsbSerialDriver
                 } while (nread == READ_HEADER_LENGTH);
             }
             return ReadFilter(dest, nread);
+            //if (_connection == null || _usbRequest == null)
+            //{
+            //    throw new IOException("Connection closed");
+            //}
+            //if (length <= 0)
+            //{
+            //    throw new Java.Lang.IllegalArgumentException("Read length too small");
+            //}
+            //int totalBytesRead;
+            //int readMax = Math.Min(length, dest.Length);
+            //totalBytesRead = _connection.BulkTransfer(_readEndpoint, dest, readMax, timeout);
+
+            //if (totalBytesRead < READ_HEADER_LENGTH)
+            //{
+            //    throw new IOException("Expected at least " + READ_HEADER_LENGTH + " bytes");
+            //}
+
+            //return ReadFilter(dest, totalBytesRead);
         }
 
         protected int ReadFilter(byte[] buffer, int totalBytesRead)
@@ -224,11 +240,11 @@ public class FtdiSerialDriver : IUsbSerialDriver
                 Array.Copy(buffer, srcPos + READ_HEADER_LENGTH, buffer, destPos, length);
                 destPos += length;
             }
-            Log.Debug(TAG, "read filter " + totalBytesRead + " -> " + destPos);
+            //Log.Debug(TAG, "read filter " + totalBytesRead + " -> " + destPos);
             return destPos;
         }
 
-        private void setBaudrate(int baudRate)
+        private void SetBaudrate(int baudRate)
         {
             int divisor, subdivisor, effectiveBaudRate;
             if (baudRate > 3500000)
@@ -274,13 +290,12 @@ public class FtdiSerialDriver : IUsbSerialDriver
                 case 6: value |= 0x8000; index |= 1; break; // 16,15,14 = 110 - sub-integer divisor = 0.75
                 case 7: value |= 0xc000; index |= 1; break; // 16,15,14 = 111 - sub-integer divisor = 0.875
             }
-            if (baudRateWithPort)
+            if (_baudRateWithPort)
             {
                 index <<= 8;
                 index |= _portNumber + 1;
             }
-            Log.Debug(TAG, "baud rate={}, effective={}, error={0:0.#}%, value=0x{0:04x}, index=0x{0:04x}, divisor={}, subdivisor={}",
-            baudRate, effectiveBaudRate, baudRateError * 100, value, index, divisor, subdivisor);
+            //Log.Debug(TAG, "baud rate={}, effective={}, error={0:0.#}%, value=0x{0:04x}, index=0x{0:04x}, divisor={}, subdivisor={}", baudRate, effectiveBaudRate, baudRateError * 100, value, index, divisor, subdivisor);
 
             int result = _connection.ControlTransfer((UsbAddressing)REQTYPE_HOST_TO_DEVICE, SET_BAUD_RATE_REQUEST,
                     value, index, null, 0, USB_WRITE_TIMEOUT_MILLIS);
@@ -296,7 +311,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
             {
                 throw new Java.Lang.IllegalArgumentException("Invalid baud rate: " + baudRate);
             }
-            setBaudrate(baudRate);
+            SetBaudrate(baudRate);
 
             int config = 0;
             config |= dataBits switch
@@ -352,7 +367,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
             {
                 throw new IOException("Setting parameters failed: result=" + result);
             }
-            breakConfig = config;
+            _breakConfig = config;
         }
 
         private int GetStatus()
@@ -384,7 +399,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
 
         public override bool GetDTR()
         {
-            return dtr;
+            return _dtr;
         }
 
         public override void SetDTR(bool value)
@@ -395,7 +410,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
             {
                 throw new IOException("Set DTR failed: result=" + result);
             }
-            dtr = value;
+            _dtr = value;
         }
 
         public override bool GetRI()
@@ -405,7 +420,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
 
         public override bool GetRTS()
         {
-            return rts;
+            return _rts;
         }
 
         public override void SetRTS(bool value)
@@ -416,7 +431,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
             {
                 throw new IOException("Set DTR failed: result=" + result);
             }
-            rts = value;
+            _rts = value;
         }
 
         public override HashSet<ControlLine> GetControlLines()
@@ -425,7 +440,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
 
             HashSet<ControlLine> set = [];
 
-            if (rts)
+            if (_rts)
             {
                 set.Add(ControlLine.RTS);
             }
@@ -435,7 +450,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
                 set.Add(ControlLine.CTS);
             }
 
-            if (dtr)
+            if (_dtr)
             {
                 set.Add(ControlLine.DTR);
             }
@@ -485,7 +500,7 @@ public class FtdiSerialDriver : IUsbSerialDriver
 
         public override void SetBreak(bool value)
         {
-            int config = breakConfig;
+            int config = _breakConfig;
             if (value) config |= 0x4000;
             int result = _connection.ControlTransfer((UsbAddressing)REQTYPE_HOST_TO_DEVICE, SET_DATA_REQUEST,
                     config, _portNumber + 1, null, 0, USB_WRITE_TIMEOUT_MILLIS);

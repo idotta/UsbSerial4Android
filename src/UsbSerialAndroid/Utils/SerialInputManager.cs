@@ -18,6 +18,7 @@ public class SerialInputManager : IDisposable
     private readonly IUsbSerialPort _serialPort;
     private Thread? _thread;
     private bool _disposedValue;
+    private IObserver<byte[]>? _dataObserver;
 
     public SerialInputManager(IUsbSerialPort serialPort)
     {
@@ -43,24 +44,20 @@ public class SerialInputManager : IDisposable
     public int ReadBufferSize { get; init; }
 
     /// <summary>
-    /// Observer for incoming data. Also sends an error on exception.
-    /// </summary>
-    public IObserver<byte[]>? DataObserver { get; init; }
-
-    /// <summary>
     /// Start SerialInputManager in separate thread
     /// </summary>
     /// <exception cref="Java.Lang.IllegalStateException"></exception>
-    public void Start()
+    public void Start(IObserver<byte[]> dataObserver)
     {
         if (CurrState != State.Stopped)
         {
-            throw new Java.Lang.IllegalStateException("already started");
+            throw new Java.Lang.IllegalStateException("Already started");
         }
         if (_thread != null && _thread.IsAlive)
         {
             _thread.Join();
         }
+        _dataObserver = dataObserver;
         _thread = new(new ThreadStart(Run))
         {
             Priority = ThreadPriority
@@ -109,14 +106,14 @@ public class SerialInputManager : IDisposable
                 if (len > 0)
                 {
 #if (DEBUG)
-                    Log.Debug(TAG, "Read data len=" + len);
+                    //Log.Debug(TAG, "Read data len=" + len);
 #endif
                     // TODO: This part can cause overhead and might need optimization
-                    if (DataObserver != null)
+                    if (_dataObserver != null)
                     {
                         byte[] data = new byte[len];
                         Array.Copy(buffer, 0, data, 0, len);
-                        DataObserver.OnNext(data);
+                        _dataObserver.OnNext(data);
                     }
                 }
             }
@@ -124,12 +121,14 @@ public class SerialInputManager : IDisposable
         catch (Exception e)
         {
             Log.Warn(TAG, "Run ending due to exception: " + e.Message, e);
-            DataObserver?.OnError(e);
+            _dataObserver?.OnError(e);
         }
         finally
         {
             CurrState = State.Stopped;
             Log.Info(TAG, "Stopped");
+            _dataObserver?.OnCompleted();
+            _dataObserver = null;
         }
     }
 
