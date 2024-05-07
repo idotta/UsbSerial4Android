@@ -1,0 +1,3 @@
+[submodule "vendor/usb-serial-for-android"]
+	path = vendor/usb-serial-for-android
+	url = https://github.com/idotta/usb-serial-for-android.git
