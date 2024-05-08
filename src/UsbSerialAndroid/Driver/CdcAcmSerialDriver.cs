@@ -1,15 +1,8 @@
-﻿/* Copyright 2011-2013 Google Inc.
- * Copyright 2013 mike wakerly <opensource@hoho.com>
- *
- * Project home page: https://github.com/mik3y/usb-serial-for-android
- */
-
-using Android.Hardware.Usb;
+﻿using Android.Hardware.Usb;
 using Android.Util;
-using Java.Lang;
-using UsbSerialAndroid.Utils;
+using UsbSerialAndroid.Util;
 
-namespace UsbSerialAndroid.Drivers;
+namespace UsbSerialAndroid.Driver;
 
 public sealed class CdcAcmSerialDriverFactory : IUsbSerialDriverFactory
 {
@@ -29,13 +22,6 @@ public sealed class CdcAcmSerialDriverFactory : IUsbSerialDriverFactory
     }
 }
 
-/// <summary>
-/// USB CDC/ACM serial driver implementation.
-/// @author mike wakerly (opensource@hoho.com)
-/// @see <a
-/// href="http://www.usb.org/developers/devclass_docs/usbcdc11.pdf">
-/// Universal Serial Bus Class Definitions for Communication Devices, v1.1</a>
-/// </summary>
 public class CdcAcmSerialDriver : IUsbSerialDriver
 {
     public const int USB_SUBCLASS_ACM = 2;
@@ -43,7 +29,6 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
     private const string TAG = nameof(CdcAcmSerialDriver);
 
     private readonly UsbDevice mDevice;
-
     private readonly List<IUsbSerialPort> mPorts = [];
 
     public CdcAcmSerialDriver(UsbDevice device)
@@ -65,19 +50,19 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
         return mDevice;
     }
 
-    public List<IUsbSerialPort> GetPorts()
-    {
-        return mPorts;
-    }
+    public List<IUsbSerialPort> GetPorts() => mPorts;
 
     public class CdcAcmSerialPort : CommonUsbSerialPort
     {
         private readonly CdcAcmSerialDriver _owningDriver;
-        private UsbInterface? _controlInterface;
-        private UsbInterface? _dataInterface;
-        private UsbEndpoint? _controlEndpoint;
+
+        private UsbInterface _controlInterface;
+        private UsbInterface _dataInterface;
+
+        private UsbEndpoint _controlEndpoint;
 
         private int _controlIndex;
+
         private bool _rts = false;
         private bool _dtr = false;
 
@@ -124,14 +109,14 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
             _controlIndex = 0;
             _controlInterface = _device.GetInterface(0);
             _dataInterface = _device.GetInterface(0);
-            if (!_connection.ClaimInterface(_controlInterface, true))
+            if (!_connection?.ClaimInterface(_controlInterface, true) ?? false)
             {
                 throw new IOException("Could not claim shared control/data interface");
             }
 
             for (int i = 0; i < _controlInterface.EndpointCount; ++i)
             {
-                UsbEndpoint ep = _controlInterface.GetEndpoint(i);
+                UsbEndpoint ep = _controlInterface.GetEndpoint(i) ?? throw new IOException("No control endpoint");
                 if ((ep.Direction == UsbAddressing.In) && (ep.Type == UsbAddressing.XferInterrupt))
                 {
                     _controlEndpoint = ep;
@@ -165,7 +150,7 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
                     if (usbInterface.Id == j || usbInterface.Id == j + 1)
                     {
                         if (usbInterface.InterfaceClass == UsbClass.Comm &&
-                                usbInterface.InterfaceSubclass == (UsbClass)USB_SUBCLASS_ACM)
+                            usbInterface.InterfaceSubclass == (UsbClass)USB_SUBCLASS_ACM)
                         {
                             _controlIndex = usbInterface.Id;
                             _controlInterface = usbInterface;
@@ -186,7 +171,7 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
                 {
                     UsbInterface usbInterface = _device.GetInterface(i);
                     if (usbInterface.InterfaceClass == UsbClass.Comm &&
-                            usbInterface.InterfaceSubclass == (UsbClass)USB_SUBCLASS_ACM)
+                        usbInterface.InterfaceSubclass == (UsbClass)USB_SUBCLASS_ACM)
                     {
                         if (controlInterfaceCount == _portNumber)
                         {
@@ -216,7 +201,7 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
             {
                 throw new IOException("Could not claim control interface");
             }
-            _controlEndpoint = _controlInterface.GetEndpoint(0);
+            _controlEndpoint = _controlInterface.GetEndpoint(0) ?? throw new IOException("Invalid control endpoint");
             if (_controlEndpoint.Direction != UsbAddressing.In || _controlEndpoint.Type != UsbAddressing.XferInterrupt)
             {
                 throw new IOException("Invalid control endpoint");
@@ -233,7 +218,7 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
             }
             for (int i = 0; i < _dataInterface.EndpointCount; i++)
             {
-                UsbEndpoint ep = _dataInterface.GetEndpoint(i);
+                UsbEndpoint ep = _dataInterface.GetEndpoint(i) ?? throw new IOException("Invalid data endpoint");
                 if (ep.Direction == UsbAddressing.In && ep.Type == UsbAddressing.XferBulk)
                     _readEndpoint = ep;
                 if (ep.Direction == UsbAddressing.Out && ep.Type == UsbAddressing.XferBulk)
@@ -243,7 +228,7 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
 
         private int GetInterfaceIdFromDescriptors()
         {
-            var descriptors = _connection.GetDescriptors();
+            var descriptors = _connection?.GetDescriptors() ?? throw new IOException("Invalid connection");
             Log.Debug(TAG, "USB descriptor:");
             foreach (var descriptor in descriptors)
             {
@@ -280,8 +265,8 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
 
         private int SendAcmControlMessage(int request, int value, byte[]? buf)
         {
-            int len = _connection.ControlTransfer(
-                    (UsbAddressing)USB_RT_ACM, request, value, _controlIndex, buf, buf != null ? buf.Length : 0, 5000);
+            int len = _connection?.ControlTransfer(
+                    (UsbAddressing)USB_RT_ACM, request, value, _controlIndex, buf, buf != null ? buf.Length : 0, 5000) ?? -1;
             if (len < 0)
             {
                 throw new IOException("controlTransfer failed");
@@ -293,50 +278,52 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
         {
             try
             {
-                _connection.ReleaseInterface(_controlInterface);
-                _connection.ReleaseInterface(_dataInterface);
+                _connection?.ReleaseInterface(_controlInterface);
+                _connection?.ReleaseInterface(_dataInterface);
             }
-            catch (Java.Lang.Exception) { /* ignored */ }
+            catch (Exception)
+            {
+                // Ignore
+            }
         }
 
-        public override void SetParameters(int baudRate, DataBits dataBits, StopBits stopBits, Parity parity)
+        public override void SetParameters(int baudRate, int dataBits, int stopBits, int parity)
         {
             if (baudRate <= 0)
             {
-                throw new Java.Lang.IllegalArgumentException("Invalid baud rate: " + baudRate);
+                throw new ArgumentException("Invalid baud rate: " + baudRate);
             }
-            if (dataBits < DataBits._5 || dataBits > DataBits._8)
+            if (dataBits < Constants.DATABITS_5 || dataBits > Constants.DATABITS_8)
             {
-                throw new Java.Lang.IllegalArgumentException("Invalid data bits: " + dataBits);
+                throw new ArgumentException("Invalid data bits: " + dataBits);
+            }
+            byte stopBitsByte;
+            switch (stopBits)
+            {
+                case Constants.STOPBITS_1: stopBitsByte = 0; break;
+                case Constants.STOPBITS_1_5: stopBitsByte = 1; break;
+                case Constants.STOPBITS_2: stopBitsByte = 2; break;
+                default: throw new ArgumentException("Invalid stop bits: " + stopBits);
             }
 
-            var stopBitsByte = stopBits switch
+            byte parityBitesByte;
+            switch (parity)
             {
-                StopBits._1 => (byte)0,
-                StopBits._1_5 => (byte)1,
-                StopBits._2 => (byte)2,
-                _ => throw new IllegalArgumentException("Invalid stop bits: " + stopBits),
-            };
-
-            var parityBitesByte = parity switch
-            {
-                Parity.None => (byte)0,
-                Parity.Odd => (byte)1,
-                Parity.Even => (byte)2,
-                Parity.Mark => (byte)3,
-                Parity.Space => (byte)4,
-                _ => throw new IllegalArgumentException("Invalid parity: " + parity),
-            };
-
+                case Constants.PARITY_NONE: parityBitesByte = 0; break;
+                case Constants.PARITY_ODD: parityBitesByte = 1; break;
+                case Constants.PARITY_EVEN: parityBitesByte = 2; break;
+                case Constants.PARITY_MARK: parityBitesByte = 3; break;
+                case Constants.PARITY_SPACE: parityBitesByte = 4; break;
+                default: throw new ArgumentException("Invalid parity: " + parity);
+            }
             byte[] msg = {
-                    (byte) ( baudRate & 0xff),
-                    (byte) ((baudRate >> 8 ) & 0xff),
-                    (byte) ((baudRate >> 16) & 0xff),
-                    (byte) ((baudRate >> 24) & 0xff),
-                    stopBitsByte,
-                    parityBitesByte,
-                    (byte) dataBits};
-
+                (byte) ( baudRate & 0xff),
+                (byte) ((baudRate >> 8 ) & 0xff),
+                (byte) ((baudRate >> 16) & 0xff),
+                (byte) ((baudRate >> 24) & 0xff),
+                stopBitsByte,
+                parityBitesByte,
+                (byte) dataBits};
             SendAcmControlMessage(SET_LINE_CODING, 0, msg);
         }
 
@@ -364,13 +351,13 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
 
         private void SetDtrRts()
         {
-            int value = (_rts ? 0x2 : 0) | (_dtr ? 0x1 : 0);
-            SendAcmControlMessage(SET_CONTROL_LINE_STATE, value, null);
+            int val = (_rts ? 0x2 : 0) | (_dtr ? 0x1 : 0);
+            SendAcmControlMessage(SET_CONTROL_LINE_STATE, val, null);
         }
 
         public override HashSet<ControlLine> GetControlLines()
         {
-            HashSet<ControlLine> set = new();
+            HashSet<ControlLine> set = [];
 
             if (_rts)
             {

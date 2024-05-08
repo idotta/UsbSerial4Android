@@ -3,7 +3,7 @@ using Android.Hardware.Usb;
 using Android.OS;
 using Android.Util;
 
-namespace UsbSerialAndroid.Utils;
+namespace UsbSerialAndroid.Util;
 
 public sealed class PermissionHandler
 {

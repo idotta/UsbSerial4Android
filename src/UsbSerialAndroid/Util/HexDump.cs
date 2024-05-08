@@ -17,7 +17,7 @@
 using Java.Security;
 using System.Text;
 
-namespace UsbSerialAndroid.Utils;
+namespace UsbSerialAndroid.Util;
 
 /// <summary>
 /// Clone of Android's /core/java/com/android/internal/util/HexDump class, for use in debugging.

@@ -1,6 +1,6 @@
 ﻿using Android.Util;
 
-namespace UsbSerialAndroid.Utils;
+namespace UsbSerialAndroid.Util;
 
 /// <summary>
 /// Utility class which services a {@link UsbSerialPort} in its {@link #run()} method.
@@ -18,7 +18,7 @@ public class SerialInputManager : IDisposable
     private readonly IUsbSerialPort _serialPort;
     private Thread? _thread;
     private bool _disposedValue;
-    private IObserver<byte[]>? _dataObserver;
+    private Action<byte[]>? _dataCallback;
 
     public SerialInputManager(IUsbSerialPort serialPort)
     {
@@ -47,7 +47,7 @@ public class SerialInputManager : IDisposable
     /// Start SerialInputManager in separate thread
     /// </summary>
     /// <exception cref="Java.Lang.IllegalStateException"></exception>
-    public void Start(IObserver<byte[]> dataObserver)
+    public void Start(Action<byte[]> dataCallback)
     {
         if (CurrState != State.Stopped)
         {
@@ -57,7 +57,7 @@ public class SerialInputManager : IDisposable
         {
             _thread.Join();
         }
-        _dataObserver = dataObserver;
+        _dataCallback = dataCallback;
         _thread = new(new ThreadStart(Run))
         {
             Priority = ThreadPriority
@@ -109,11 +109,11 @@ public class SerialInputManager : IDisposable
                     //Log.Debug(TAG, "Read data len=" + len);
 #endif
                     // TODO: This part can cause overhead and might need optimization
-                    if (_dataObserver != null)
+                    if (_dataCallback != null)
                     {
                         byte[] data = new byte[len];
                         Array.Copy(buffer, 0, data, 0, len);
-                        _dataObserver.OnNext(data);
+                        _dataCallback(data);
                     }
                 }
             }
@@ -121,14 +121,13 @@ public class SerialInputManager : IDisposable
         catch (Exception e)
         {
             Log.Warn(TAG, "Run ending due to exception: " + e.Message, e);
-            _dataObserver?.OnError(e);
+            //_dataCallback?.OnError(e);
         }
         finally
         {
             CurrState = State.Stopped;
             Log.Info(TAG, "Stopped");
-            _dataObserver?.OnCompleted();
-            _dataObserver = null;
+            _dataCallback = null;
         }
     }
 

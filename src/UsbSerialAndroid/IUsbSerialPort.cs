@@ -1,272 +1,220 @@
-﻿/* Copyright 2011-2013 Google Inc.
- * Copyright 2013 mike wakerly <opensource@hoho.com>
- *
- * Project home page: https://github.com/mik3y/usb-serial-for-android
- */
-
-using Android.Hardware.Usb;
+﻿using Android.Hardware.Usb;
 
 namespace UsbSerialAndroid;
 
-public enum DataBits
+public enum ControlLine { RTS, CTS, DTR, DSR, CD, RI }
+
+public static partial class Constants
 {
-    _5 = 5,
-    _6 = 6,
-    _7 = 7,
-    _8 = 8
+    public const int DATABITS_5 = 5;
+    public const int DATABITS_6 = 6;
+    public const int DATABITS_7 = 7;
+    public const int DATABITS_8 = 8;
+
+    public const int PARITY_NONE = 0;
+    public const int PARITY_ODD = 1;
+    public const int PARITY_EVEN = 2;
+    public const int PARITY_MARK = 3;
+    public const int PARITY_SPACE = 4;
+
+    public const int STOPBITS_1 = 1;
+    public const int STOPBITS_1_5 = 3;
+    public const int STOPBITS_2 = 2;
 }
 
-public enum Parity
-{
-    None,
-    Odd,
-    Even,
-    Mark,
-    Space
-}
 
-public enum StopBits
-{
-    _1 = 1,
-    _1_5 = 3,
-    _2 = 2
-}
-
-public enum ControlLine
-{
-    RTS,
-    CTS,
-    DTR,
-    DSR,
-    CD,
-    RI
-}
-
-/// <summary>
-/// Interface for a single serial port.
-/// </summary>
 public interface IUsbSerialPort : IDisposable
 {
     /// <summary>
     /// Returns the driver used by this port.
     /// </summary>
-    /// <returns></returns>
     IUsbSerialDriver GetDriver();
 
     /// <summary>
     /// Returns the currently-bound USB device.
     /// </summary>
-    /// <returns></returns>
     UsbDevice GetDevice();
 
     /// <summary>
     /// Port number within driver.
     /// </summary>
-    /// <returns></returns>
     int GetPortNumber();
 
     /// <summary>
     /// Returns the write endpoint.
     /// </summary>
-    /// <returns></returns>
-    UsbEndpoint? GetWriteEndpoint();
+    UsbEndpoint GetWriteEndpoint();
 
     /// <summary>
     /// Returns the read endpoint.
     /// </summary>
-    /// <returns></returns>
-    UsbEndpoint? GetReadEndpoint();
+    UsbEndpoint GetReadEndpoint();
 
     /// <summary>
-    /// The serial number of the underlying UsbDeviceConnection, or {@code null}.
+    /// The serial number of the underlying UsbDeviceConnection, or null.
     /// </summary>
-    /// <returns>value from {@link UsbDeviceConnection#getSerial()}</returns>
-    /// /// <exception cref="SecurityException">SecurityException starting with target SDK 29 (Android 10) if permission for USB device is not granted</exception>
+    /// <returns>Value from UsbDeviceConnection.getSerial()</returns>
+    /// <exception cref="System.Security.SecurityException">Starting with target SDK 29 (Android 10) if permission for USB device is not granted</exception>
     string GetSerial();
 
     /// <summary>
-    /// Opens and initializes the port. Upon success, caller must ensure that
-    /// {@link #close()} is eventually called.
+    /// Opens and initializes the port. Upon success, caller must ensure that close() is eventually called.
     /// </summary>
-    /// <param name="connection">an open device connection, acquired with {@link UsbManager#openDevice(android.hardware.usb.UsbDevice)}</param>
-    /// <exception cref="IOException">on error opening or initializing the port.</exception>
+    /// <param name="connection">An open device connection, acquired with UsbManager.openDevice(UsbDevice)</param>
+    /// <exception cref="System.IO.IOException">On error opening or initializing the port.</exception>
     void Open(UsbDeviceConnection connection);
 
     /// <summary>
-    /// Closes the port and {@link UsbDeviceConnection}
+    /// Closes the port and UsbDeviceConnection.
     /// </summary>
-    /// <exception cref="IOException">on error closing the port.</exception>
+    /// <exception cref="System.IO.IOException">On error closing the port.</exception>
     void Close();
 
     /// <summary>
     /// Reads as many bytes as possible into the destination buffer.
     /// </summary>
-    /// <param name="dest">the destination byte buffer</param>
-    /// <param name="timeout">the timeout for reading in milliseconds, 0 is infinite</param>
-    /// <returns>the actual number of bytes read</returns>
-    /// <exception cref="IOException">if an error occurred during reading</exception>
+    /// <param name="dest">The destination byte buffer</param>
+    /// <param name="timeout">The timeout for reading in milliseconds, 0 is infinite</param>
+    /// <returns>The actual number of bytes read</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
     int Read(byte[] dest, int timeout);
 
     /// <summary>
     /// Reads bytes with specified length into the destination buffer.
     /// </summary>
-    /// <param name="dest">the destination byte buffer</param>
-    /// <param name="length">the maximum length of the data to read</param>
-    /// <param name="timeout">the timeout for reading in milliseconds, 0 is infinite</param>
-    /// <returns>the actual number of bytes read</returns>
-    /// <exception cref="IOException">if an error occurred during reading</exception>
+    /// <param name="dest">The destination byte buffer</param>
+    /// <param name="length">The maximum length of the data to read</param>
+    /// <param name="timeout">The timeout for reading in milliseconds, 0 is infinite</param>
+    /// <returns>The actual number of bytes read</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
     int Read(byte[] dest, int length, int timeout);
 
     /// <summary>
     /// Writes as many bytes as possible from the source buffer.
     /// </summary>
-    /// <param name="src">the source byte buffer</param>
-    /// <param name="timeout">the timeout for writing in milliseconds, 0 is infinite</param>
-    /// <exception cref="SerialTimeoutException">if timeout reached before sending all data. ex.bytesTransferred may contain bytes transferred</exception>
-    /// <exception cref="IOException">if an error occurred during writing</exception>
+    /// <param name="src">The source byte buffer</param>
+    /// <param name="timeout">The timeout for writing in milliseconds, 0 is infinite</param>
+    /// <exception cref="SerialTimeoutException">If timeout reached before sending all data. ex.bytesTransferred may contain bytes transferred</exception>
+    /// <exception cref="System.IO.IOException">If an error occurred during writing</exception>
     void Write(byte[] src, int timeout);
 
     /// <summary>
     /// Writes bytes with specified length from the source buffer.
     /// </summary>
-    /// <param name="src">the source byte buffer</param>
-    /// <param name="length">the length of the data to write</param>
-    /// <param name="timeout">the timeout for writing in milliseconds, 0 is infinite</param>
-    /// <exception cref="IOException">if an error occurred during writing</exception>
-    void Write(byte[] src, int length, int timeout);
+    /// <param name="src">The source byte buffer</param>
+    /// <param name="length">The length of the data to write</param>
+    /// <param name="timeout">The timeout for writing in milliseconds, 0 is infinite</param>
+    /// <exception cref="SerialTimeoutException">If timeout reached before sending all data. ex.bytesTransferred may contain bytes transferred</exception>
+    /// <exception cref="System.IO.IOException">If an error occurred during writing</exception>
+    void Write(byte[] src, int offset, int length, int timeout);
 
     /// <summary>
     /// Sets various serial port parameters.
     /// </summary>
-    /// <param name="baudRate">baud rate as an integer, for example {@code 115200}.</param>
-    /// <param name="dataBits">one of {@link #DATABITS_5}, {@link #DATABITS_6}, {@link #DATABITS_7}, or {@link #DATABITS_8}.</param>
-    /// <param name="stopBits">one of {@link #STOPBITS_1}, {@link #STOPBITS_1_5}, or {@link #STOPBITS_2}.</param>
-    /// <param name="parity">one of {@link #PARITY_NONE}, {@link #PARITY_ODD}, {@link #PARITY_EVEN}, {@link #PARITY_MARK}, or {@link #PARITY_SPACE}.</param>
-    /// <exception cref="IOException">on error setting the port parameters</exception>
-    /// <exception cref="UnsupportedOperationException">if values are not supported by a specific device</exception>
-    void SetParameters(int baudRate, DataBits dataBits, StopBits stopBits, Parity parity);
+    /// <param name="baudRate">Baud rate as an integer, for example 115200</param>
+    /// <param name="dataBits">One of DATABITS_5, DATABITS_6, DATABITS_7, or DATABITS_8</param>
+    /// <param name="stopBits">One of STOPBITS_1, STOPBITS_1_5, or STOPBITS_2</param>
+    /// <param name="parity">One of PARITY_NONE, PARITY_ODD, PARITY_EVEN, PARITY_MARK, or PARITY_SPACE</param>
+    /// <exception cref="System.IO.IOException">On error setting the port parameters</exception>
+    /// <exception cref="System.NotSupportedException">If values are not supported by a specific device</exception>
+    void SetParameters(int baudRate, int dataBits, int stopBits, int parity);
 
-    /**
-     * Gets the CD (Carrier Detect) bit from the underlying UART.
-     *
-     * @return the current state
-     * @throws IOException if an error occurred during reading
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Gets the CD (Carrier Detect) bit from the underlying UART.
+    /// </summary>
+    /// <returns>The current state</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     bool GetCD();
 
-    /**
-     * Gets the CTS (Clear To Send) bit from the underlying UART.
-     *
-     * @return the current state
-     * @throws IOException if an error occurred during reading
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Gets the CTS (Clear To Send) bit from the underlying UART.
+    /// </summary>
+    /// <returns>The current state</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     bool GetCTS();
 
-    /**
-     * Gets the DSR (Data Set Ready) bit from the underlying UART.
-     *
-     * @return the current state
-     * @throws IOException if an error occurred during reading
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Gets the DSR (Data Set Ready) bit from the underlying UART.
+    /// </summary>
+    /// <returns>The current state</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     bool GetDSR();
 
-    /**
-     * Gets the DTR (Data Terminal Ready) bit from the underlying UART.
-     *
-     * @return the current state
-     * @throws IOException if an error occurred during reading
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Gets the DTR (Data Terminal Ready) bit from the underlying UART.
+    /// </summary>
+    /// <returns>The current state</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     bool GetDTR();
 
-    /**
-     * Sets the DTR (Data Terminal Ready) bit on the underlying UART, if supported.
-     *
-     * @param value the value to set
-     * @throws IOException if an error occurred during writing
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Sets the DTR (Data Terminal Ready) bit on the underlying UART, if supported.
+    /// </summary>
+    /// <param name="value">The value to set</param>
+    /// <exception cref="System.IO.IOException">If an error occurred during writing</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     void SetDTR(bool value);
 
-    /**
-     * Gets the RI (Ring Indicator) bit from the underlying UART.
-     *
-     * @return the current state
-     * @throws IOException if an error occurred during reading
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Gets the RI (Ring Indicator) bit from the underlying UART.
+    /// </summary>
+    /// <returns>The current state</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     bool GetRI();
 
-    /**
-     * Gets the RTS (Request To Send) bit from the underlying UART.
-     *
-     * @return the current state
-     * @throws IOException if an error occurred during reading
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Gets the RTS (Request To Send) bit from the underlying UART.
+    /// </summary>
+    /// <returns>The current state</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     bool GetRTS();
 
-    /**
-     * Sets the RTS (Request To Send) bit on the underlying UART, if supported.
-     *
-     * @param value the value to set
-     * @throws IOException if an error occurred during writing
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Sets the RTS (Request To Send) bit on the underlying UART, if supported.
+    /// </summary>
+    /// <param name="value">The value to set</param>
+    /// <exception cref="System.IO.IOException">If an error occurred during writing</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     void SetRTS(bool value);
 
-    /**
-     * Gets all control line values from the underlying UART, if supported.
-     * Requires less USB calls than calling getRTS() + ... + getRI() individually.
-     *
-     * @return EnumSet.contains(...) is {@code true} if set, else {@code false}
-     * @throws IOException if an error occurred during reading
-     */
-
+    /// <summary>
+    /// Gets all control line values from the underlying UART, if supported.
+    /// </summary>
+    /// <returns>EnumSet.contains(...) is true if set, else false</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
     HashSet<ControlLine> GetControlLines();
 
-    /**
-     * Gets all control line supported flags.
-     *
-     * @return EnumSet.contains(...) is {@code true} if supported, else {@code false}
-     * @throws IOException if an error occurred during reading
-     */
-
+    /// <summary>
+    /// Gets all control line supported flags.
+    /// </summary>
+    /// <returns>EnumSet.contains(...) is true if supported, else false</returns>
+    /// <exception cref="System.IO.IOException">If an error occurred during reading</exception>
     HashSet<ControlLine> GetSupportedControlLines();
 
-    /**
-     * Purge non-transmitted output data and / or non-read input data.
-     *
-     * @param purgeWriteBuffers {@code true} to discard non-transmitted output data
-     * @param purgeReadBuffers {@code true} to discard non-read input data
-     * @throws IOException if an error occurred during flush
-     * @throws UnsupportedOperationException if not supported
-     */
-
+    /// <summary>
+    /// Purge non-transmitted output data and / or non-read input data.
+    /// </summary>
+    /// <param name="purgeWriteBuffers">True to discard non-transmitted output data</param>
+    /// <param name="purgeReadBuffers">True to discard non-read input data</param>
+    /// <exception cref="System.IO.IOException">If an error occurred during flush</exception>
+    /// <exception cref="System.NotSupportedException">If not supported</exception>
     void PurgeHwBuffers(bool purgeWriteBuffers, bool purgeReadBuffers);
 
-    /**
-     * send BREAK condition.
-     *
-     * @param value set/reset
-     */
-
+    /// <summary>
+    /// Send BREAK condition.
+    /// </summary>
+    /// <param name="value">Set/reset</param>
     void SetBreak(bool value);
 
-    /**
-     * Returns the current state of the connection.
-     */
-
+    /// <summary>
+    /// Returns the current state of the connection.
+    /// </summary>
+    /// <returns>True if the connection is open, otherwise false</returns>
     bool IsOpen();
 }

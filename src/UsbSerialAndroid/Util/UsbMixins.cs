@@ -1,6 +1,6 @@
 ﻿using Android.Hardware.Usb;
 
-namespace UsbSerialAndroid.Utils;
+namespace UsbSerialAndroid.Util;
 
 public static class UsbMixins
 {

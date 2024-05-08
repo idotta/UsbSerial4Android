@@ -1,4 +1,4 @@
-﻿using UsbSerialAndroid.Drivers;
+﻿using UsbSerialAndroid.Driver;
 
 namespace UsbSerialAndroid;
 
@@ -21,18 +21,6 @@ public class UsbSerialProber
         ProbeTable probeTable = new();
 
         probeTable.AddDriver(new CdcAcmSerialDriverFactory());
-
-        //probeTable.AddDriver(Cp21xxSerialDriver.private class);
-
-        probeTable.AddDriver(new FtdiSerialDriverFactory());
-
-        //probeTable.AddDriver(ProlificSerialDriver.private class);
-
-        //probeTable.AddDriver(Ch34xSerialDriver.private class);
-
-        //probeTable.AddDriver(GsmModemSerialDriver.private class);
-
-        //probeTable.AddDriver(ChromeCcdSerialDriver.private class);
 
         return probeTable;
     }
