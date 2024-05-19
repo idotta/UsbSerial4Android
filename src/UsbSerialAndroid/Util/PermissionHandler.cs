@@ -25,8 +25,13 @@ public sealed class PermissionHandler
             TaskCompletionSource<bool> tcs = new();
             PermissionBroadcastReceiver permissionReceiver = new(tcs);
             PendingIntentFlags flags = Build.VERSION.SdkInt >= BuildVersionCodes.M ? PendingIntentFlags.Mutable : 0;
-            PendingIntent? permissionIntent = PendingIntent.GetBroadcast(_context, 0, new Intent("com.usbserialandroid.USB_PERMISSION"), flags);
-            IntentFilter filter = new("com.usbserialandroid.USB_PERMISSION");
+            string? action = _context.PackageName;
+            if (action != null)
+            {
+                action += ".USB_PERMISSION";
+            }
+            PendingIntent? permissionIntent = PendingIntent.GetBroadcast(_context, 0, new Intent(action), flags);
+            IntentFilter filter = new(action);
             _context.RegisterReceiver(permissionReceiver, filter);
             usbManager.RequestPermission(_serialDriver.GetDevice(), permissionIntent);
             bool granted = await tcs.Task;

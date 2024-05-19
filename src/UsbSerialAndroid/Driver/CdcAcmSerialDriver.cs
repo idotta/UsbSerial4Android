@@ -4,62 +4,44 @@ using UsbSerialAndroid.Util;
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class CdcAcmSerialDriverFactory : IUsbSerialDriverFactory
-{
-    public IUsbSerialDriver Create(UsbDevice device)
-    {
-        return new CdcAcmSerialDriver(device);
-    }
-
-    public Dictionary<int, int[]> GetSupportedDevices()
-    {
-        return [];
-    }
-
-    public bool Probe(UsbDevice device)
-    {
-        return device.CountAcmPorts() > 0;
-    }
-}
-
 public class CdcAcmSerialDriver : IUsbSerialDriver
 {
     public const int USB_SUBCLASS_ACM = 2;
 
     private const string TAG = nameof(CdcAcmSerialDriver);
 
-    private readonly UsbDevice mDevice;
-    private readonly List<IUsbSerialPort> mPorts = [];
+    private readonly UsbDevice _device;
+    private readonly List<IUsbSerialPort> _ports = [];
 
     public CdcAcmSerialDriver(UsbDevice device)
     {
-        mDevice = device ?? throw new ArgumentNullException(nameof(device));
+        _device = device ?? throw new ArgumentNullException(nameof(device));
         int ports = device.CountAcmPorts();
         for (int port = 0; port < ports; port++)
         {
-            mPorts.Add(new CdcAcmSerialPort(this, mDevice, port));
+            _ports.Add(new CdcAcmSerialPort(this, _device, port));
         }
-        if (mPorts.Count == 0)
+        if (_ports.Count == 0)
         {
-            mPorts.Add(new CdcAcmSerialPort(this, mDevice, -1));
+            _ports.Add(new CdcAcmSerialPort(this, _device, -1));
         }
     }
 
     public UsbDevice GetDevice()
     {
-        return mDevice;
+        return _device;
     }
 
-    public List<IUsbSerialPort> GetPorts() => mPorts;
+    public List<IUsbSerialPort> GetPorts() => _ports;
 
     public class CdcAcmSerialPort : CommonUsbSerialPort
     {
         private readonly CdcAcmSerialDriver _owningDriver;
 
-        private UsbInterface _controlInterface;
-        private UsbInterface _dataInterface;
+        private UsbInterface? _controlInterface;
+        private UsbInterface? _dataInterface;
 
-        private UsbEndpoint _controlEndpoint;
+        private UsbEndpoint? _controlEndpoint;
 
         private int _controlIndex;
 
@@ -68,6 +50,7 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
 
         private const int USB_RECIP_INTERFACE = 0x01;
         private const int USB_RT_ACM = UsbConstants.UsbTypeClass | USB_RECIP_INTERFACE;
+        
         private const int SET_LINE_CODING = 0x20;  // USB CDC 1.1 section 6.2
         private const int GET_LINE_CODING = 0x21;
         private const int SET_CONTROL_LINE_STATE = 0x22;
@@ -138,6 +121,10 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
 
         private void OpenInterface()
         {
+            if (_connection is null)
+            {
+                throw new IOException("Connection is invalid");
+            }
             _controlInterface = null;
             _dataInterface = null;
             int j = GetInterfaceIdFromDescriptors();
@@ -297,33 +284,31 @@ public class CdcAcmSerialDriver : IUsbSerialDriver
             {
                 throw new ArgumentException("Invalid data bits: " + dataBits);
             }
-            byte stopBitsByte;
-            switch (stopBits)
-            {
-                case Constants.STOPBITS_1: stopBitsByte = 0; break;
-                case Constants.STOPBITS_1_5: stopBitsByte = 1; break;
-                case Constants.STOPBITS_2: stopBitsByte = 2; break;
-                default: throw new ArgumentException("Invalid stop bits: " + stopBits);
-            }
 
-            byte parityBitesByte;
-            switch (parity)
+            var stopBitsByte = stopBits switch
             {
-                case Constants.PARITY_NONE: parityBitesByte = 0; break;
-                case Constants.PARITY_ODD: parityBitesByte = 1; break;
-                case Constants.PARITY_EVEN: parityBitesByte = 2; break;
-                case Constants.PARITY_MARK: parityBitesByte = 3; break;
-                case Constants.PARITY_SPACE: parityBitesByte = 4; break;
-                default: throw new ArgumentException("Invalid parity: " + parity);
-            }
-            byte[] msg = {
+                Constants.STOPBITS_1 => (byte)0,
+                Constants.STOPBITS_1_5 => (byte)1,
+                Constants.STOPBITS_2 => (byte)2,
+                _ => throw new ArgumentException("Invalid stop bits: " + stopBits),
+            };
+            var parityBitesByte = parity switch
+            {
+                Constants.PARITY_NONE => (byte)0,
+                Constants.PARITY_ODD => (byte)1,
+                Constants.PARITY_EVEN => (byte)2,
+                Constants.PARITY_MARK => (byte)3,
+                Constants.PARITY_SPACE => (byte)4,
+                _ => throw new ArgumentException("Invalid parity: " + parity),
+            };
+            byte[] msg = [
                 (byte) ( baudRate & 0xff),
                 (byte) ((baudRate >> 8 ) & 0xff),
                 (byte) ((baudRate >> 16) & 0xff),
                 (byte) ((baudRate >> 24) & 0xff),
                 stopBitsByte,
                 parityBitesByte,
-                (byte) dataBits};
+                (byte) dataBits];
             SendAcmControlMessage(SET_LINE_CODING, 0, msg);
         }
 

@@ -4,6 +4,7 @@ namespace UsbSerialAndroid.Util;
 
 /// <summary>
 /// Utility class which services a {@link UsbSerialPort} in its {@link #run()} method.
+/// Simplified version from original @author mike wakerly (opensource@hoho.com)
 /// </summary>
 public class SerialInputManager : IDisposable
 {

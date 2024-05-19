@@ -1,16 +1,16 @@
 ﻿using Android.Hardware.Usb;
 using Android.Util;
-using Java.Lang;
 using Java.Nio;
 using UsbSerialAndroid.Exceptions;
 using UsbSerialAndroid.Util;
 
 namespace UsbSerialAndroid.Driver
 {
+    /// <summary>
+    /// A base class shared by several driver implementations.
+    /// </summary>
     public abstract class CommonUsbSerialPort : IUsbSerialPort
     {
-        public static bool DEBUG = false;
-
         private const string TAG = nameof(CommonUsbSerialPort);
         private const int MAX_READ_SIZE = 16 * 1024;
 
@@ -24,8 +24,6 @@ namespace UsbSerialAndroid.Driver
 
         protected byte[]? _writeBuffer;
         protected readonly object _writeBufferLock = new();
-
-        private bool _disposedValue;
 
         protected CommonUsbSerialPort(UsbDevice device, int portNumber)
         {
@@ -65,7 +63,7 @@ namespace UsbSerialAndroid.Driver
             return _connection?.Serial ?? string.Empty;
         }
 
-        private void SetWriteBufferSize(int bufferSize)
+        public void SetWriteBufferSize(int bufferSize)
         {
             lock (_writeBufferLock)
             {
@@ -107,13 +105,13 @@ namespace UsbSerialAndroid.Driver
                 _usbRequest = new UsbRequest();
                 _usbRequest.Initialize(_connection, _readEndpoint);
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 try
                 {
                     Close();
                 }
-                catch (System.Exception) { /* ignored */ }
+                catch (Exception) { /* ignored */ }
                 throw;
             }
         }
@@ -130,24 +128,29 @@ namespace UsbSerialAndroid.Driver
             _connection = null;
             try
             {
-                _usbRequest.Cancel();
+                _usbRequest?.Cancel();
             }
-            catch (System.Exception) { /* ignored */ }
+            catch (Exception) { /* ignored */ }
             _usbRequest = null;
             try
             {
                 CloseInt();
             }
-            catch (System.Exception) { /* ignored */ }
+            catch (Exception) { /* ignored */ }
             try
             {
                 connection.Close();
             }
-            catch (System.Exception) { /* ignored */ }
+            catch (Exception) { /* ignored */ }
         }
 
         protected abstract void CloseInt();
 
+        /// <summary>
+        /// Use simple USB request supported by all devices to test if connection is still valid
+        /// </summary>
+        /// <param name="full"></param>
+        /// <exception cref="IOException"></exception>
         protected void TestConnection(bool full)
         {
             if (_connection == null)
@@ -190,12 +193,12 @@ namespace UsbSerialAndroid.Driver
             {
                 throw new ArgumentException("Read length too small");
             }
-            length = System.Math.Min(length, dest.Length);
+            length = Math.Min(length, dest.Length);
             int nread;
             if (timeout != 0)
             {
                 long endTime = testConnection ? MonotonicClock.Millis() + timeout : 0;
-                int readMax = System.Math.Min(length, MAX_READ_SIZE);
+                int readMax = Math.Min(length, MAX_READ_SIZE);
                 nread = _connection.BulkTransfer(_readEndpoint, dest, readMax, timeout);
                 if (nread == -1 && testConnection)
                 {
@@ -220,7 +223,7 @@ namespace UsbSerialAndroid.Driver
                     TestConnection(true);
                 }
             }
-            return System.Math.Max(nread, 0);
+            return Math.Max(nread, 0);
         }
 
         public void Write(byte[] src, int timeout)
@@ -231,11 +234,15 @@ namespace UsbSerialAndroid.Driver
         public void Write(byte[] src, int offset, int length, int timeout)
         {
             long endTime = timeout == 0 ? 0 : MonotonicClock.Millis() + timeout;
-            length = System.Math.Min(length, src.Length);
+            length = Math.Min(length, src.Length);
 
             if (_connection == null)
             {
                 throw new IOException("Connection closed");
+            }
+            if (_writeEndpoint == null)
+            {
+                throw new IOException("Could not get write endpoint");
             }
             while (offset < length)
             {
@@ -248,7 +255,7 @@ namespace UsbSerialAndroid.Driver
                     byte[] writeBuffer;
 
                     _writeBuffer ??= new byte[_writeEndpoint.MaxPacketSize];
-                    requestLength = System.Math.Min(length - offset, _writeBuffer.Length);
+                    requestLength = Math.Min(length - offset, _writeBuffer.Length);
                     if (offset == 0)
                     {
                         writeBuffer = src;
@@ -279,19 +286,17 @@ namespace UsbSerialAndroid.Driver
                         actualLength = _connection.BulkTransfer(_writeEndpoint, writeBuffer, requestLength, requestTimeout);
                     }
                 }
-                if (DEBUG)
-                {
-                    Log.Debug(TAG, string.Format("Wrote {0}/{1} offset {2}/{3} timeout {4}", actualLength, requestLength, offset, length, requestTimeout));
-                }
+#if (DEBUG)
+                Log.Debug(TAG, string.Format("Wrote {0}/{1} offset {2}/{3} timeout {4}", actualLength, requestLength, offset, length, requestTimeout));
+#endif
                 if (actualLength <= 0)
                 {
                     if (timeout != 0 && MonotonicClock.Millis() >= endTime)
                     {
-                        SerialTimeoutException ex = new(string.Format("Error writing {0} bytes at offset {1} of total {2}, rc={3}", requestLength, offset, src.Length, actualLength))
+                        throw new SerialTimeoutException(string.Format("Error writing {0} bytes at offset {1} of total {2}, rc={3}", requestLength, offset, src.Length, actualLength))
                         {
                             BytesTransferred = offset
                         };
-                        throw ex;
                     }
                     else
                     {
@@ -364,35 +369,6 @@ namespace UsbSerialAndroid.Driver
         public virtual void SetBreak(bool value)
         {
             throw new NotSupportedException();
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                _disposedValue = true;
-            }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~CommonUsbSerialPort()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

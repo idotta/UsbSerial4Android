@@ -23,7 +23,7 @@ public static partial class Constants
 }
 
 
-public interface IUsbSerialPort : IDisposable
+public interface IUsbSerialPort
 {
     /// <summary>
     /// Returns the driver used by this port.
