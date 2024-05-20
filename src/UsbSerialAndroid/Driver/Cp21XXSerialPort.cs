@@ -2,7 +2,7 @@
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class Cp21XXSerialPort : CommonUsbSerialPort
+internal sealed class Cp21XXSerialPort : CommonUsbSerialPort
 {
     private readonly Cp21XXSerialDriver _owningDriver;
 

@@ -2,7 +2,7 @@
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class GsmModemSerialDriver : IUsbSerialDriver
+internal sealed class GsmModemSerialDriver : IUsbSerialDriver
 {
     private readonly UsbDevice _device;
     private readonly IUsbSerialPort _port;

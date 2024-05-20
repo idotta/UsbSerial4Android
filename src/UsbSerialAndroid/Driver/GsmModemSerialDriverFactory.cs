@@ -2,7 +2,7 @@
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class GsmModemSerialDriverFactory : IUsbSerialDriverFactory
+internal sealed class GsmModemSerialDriverFactory : IUsbSerialDriverFactory
 {
     public IUsbSerialDriver Create(UsbDevice device)
     {

@@ -2,7 +2,7 @@
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class CdcAcmSerialDriver : IUsbSerialDriver
+internal sealed class CdcAcmSerialDriver : IUsbSerialDriver
 {
     public const int USB_SUBCLASS_ACM = 2;
 

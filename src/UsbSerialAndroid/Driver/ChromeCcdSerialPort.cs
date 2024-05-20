@@ -3,7 +3,7 @@ using Android.Util;
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class ChromeCcdSerialPort : CommonUsbSerialPort
+internal sealed class ChromeCcdSerialPort : CommonUsbSerialPort
 {
     private const string TAG = nameof(ChromeCcdSerialPort);
 

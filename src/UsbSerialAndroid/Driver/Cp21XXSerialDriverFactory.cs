@@ -2,7 +2,7 @@
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class Cp21XXSerialDriverFactory : IUsbSerialDriverFactory
+internal sealed class Cp21XXSerialDriverFactory : IUsbSerialDriverFactory
 {
     public IUsbSerialDriver Create(UsbDevice device)
     {

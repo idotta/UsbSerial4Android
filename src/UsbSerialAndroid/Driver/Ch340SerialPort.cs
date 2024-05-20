@@ -3,7 +3,7 @@ using Android.Util;
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class Ch340SerialPort : CommonUsbSerialPort
+internal sealed class Ch340SerialPort : CommonUsbSerialPort
 {
     private const string TAG = nameof(Ch340SerialPort);
 

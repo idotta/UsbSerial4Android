@@ -2,7 +2,7 @@
 
 namespace UsbSerialAndroid.Driver;
 
-public static class CdcAcmHelpers
+internal static class CdcAcmHelpers
 {
     public const int USB_SUBCLASS_ACM = 2;
 

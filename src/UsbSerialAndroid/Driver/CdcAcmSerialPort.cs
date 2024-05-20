@@ -4,7 +4,7 @@ using UsbSerialAndroid.Util;
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class CdcAcmSerialPort : CommonUsbSerialPort
+internal sealed class CdcAcmSerialPort : CommonUsbSerialPort
 {
     private const string TAG = nameof(CdcAcmSerialPort);
 

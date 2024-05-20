@@ -24,6 +24,9 @@ public class UsbSerialProber
         probeTable.AddDriver(new Ch34XSerialDriverFactory());
         probeTable.AddDriver(new ChromeCcdSerialDriverFactory());
         probeTable.AddDriver(new Cp21XXSerialDriverFactory());
+        probeTable.AddDriver(new FtdiSerialDriverFactory());
+        probeTable.AddDriver(new GsmModemSerialDriverFactory());
+        probeTable.AddDriver(new ProlificSerialDriverFactory());
 
         return probeTable;
     }

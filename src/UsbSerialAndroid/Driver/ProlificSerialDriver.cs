@@ -2,15 +2,15 @@
 
 namespace UsbSerialAndroid.Driver;
 
-internal class Ch34XSerialDriver : IUsbSerialDriver
+internal sealed class ProlificSerialDriver : IUsbSerialDriver
 {
     private readonly UsbDevice _device;
     private readonly IUsbSerialPort _port;
 
-    public Ch34XSerialDriver(UsbDevice device)
+    public ProlificSerialDriver(UsbDevice device)
     {
         _device = device;
-        _port = new Ch340SerialPort(this, _device, 0);
+        _port = new ProlificSerialPort(this, device, 0);
     }
 
     public UsbDevice GetDevice() => _device;

@@ -2,17 +2,17 @@
 
 namespace UsbSerialAndroid.Driver;
 
-internal sealed class Cp21XXSerialDriver : IUsbSerialDriver
+internal sealed class FtdiSerialDriver : IUsbSerialDriver
 {
     private readonly UsbDevice _device;
     private readonly List<IUsbSerialPort> _ports = [];
 
-    public Cp21XXSerialDriver(UsbDevice device)
+    public FtdiSerialDriver(UsbDevice device)
     {
         _device = device;
         for (int port = 0; port < device.InterfaceCount; port++)
         {
-            _ports.Add(new Cp21XXSerialPort(this, _device, port));
+            _ports.Add(new FtdiSerialPort(this, _device, port));
         }
     }
 

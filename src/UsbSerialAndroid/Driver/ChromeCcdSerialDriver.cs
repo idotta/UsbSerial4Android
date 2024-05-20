@@ -2,7 +2,7 @@
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class ChromeCcdSerialDriver : IUsbSerialDriver
+internal sealed class ChromeCcdSerialDriver : IUsbSerialDriver
 {
     private readonly UsbDevice _device;
     private readonly List<IUsbSerialPort> _ports = [];

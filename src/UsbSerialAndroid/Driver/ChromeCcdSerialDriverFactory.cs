@@ -2,7 +2,7 @@
 
 namespace UsbSerialAndroid.Driver;
 
-public sealed class ChromeCcdSerialDriverFactory : IUsbSerialDriverFactory
+internal sealed class ChromeCcdSerialDriverFactory : IUsbSerialDriverFactory
 {
     public IUsbSerialDriver Create(UsbDevice device)
     {
