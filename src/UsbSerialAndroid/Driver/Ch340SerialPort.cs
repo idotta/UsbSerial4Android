@@ -45,10 +45,14 @@ public sealed class Ch340SerialPort : CommonUsbSerialPort
 
     protected override void OpenInt()
     {
+        if (_connection == null)
+        {
+            throw new IOException("Connection closed");
+        }
         for (int i = 0; i < _device.InterfaceCount; i++)
         {
             UsbInterface usbIface = _device.GetInterface(i);
-            if (!_connection?.ClaimInterface(usbIface, true) ?? false)
+            if (!_connection.ClaimInterface(usbIface, true))
             {
                 throw new IOException("Could not claim data interface");
             }

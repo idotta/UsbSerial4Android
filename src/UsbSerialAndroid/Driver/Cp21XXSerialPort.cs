@@ -61,7 +61,11 @@ public sealed class Cp21XXSerialPort : CommonUsbSerialPort
 
     private void SetConfigSingle(int request, int value)
     {
-        int? result = _connection?.ControlTransfer((UsbAddressing)REQTYPE_HOST_TO_DEVICE, request, value, _portNumber, null, 0, USB_WRITE_TIMEOUT_MILLIS);
+        if (_connection == null)
+        {
+            throw new IOException("Connection closed");
+        }
+        int? result = _connection.ControlTransfer((UsbAddressing)REQTYPE_HOST_TO_DEVICE, request, value, _portNumber, null, 0, USB_WRITE_TIMEOUT_MILLIS);
         if (result != 0)
         {
             throw new IOException("Control transfer failed: " + request + " / " + value + " -> " + result);
@@ -70,8 +74,12 @@ public sealed class Cp21XXSerialPort : CommonUsbSerialPort
 
     private byte GetStatus()
     {
+        if (_connection == null)
+        {
+            throw new IOException("Connection closed");
+        }
         byte[] buffer = new byte[1];
-        int? result = _connection?.ControlTransfer((UsbAddressing)REQTYPE_DEVICE_TO_HOST, SILABSER_GET_MDMSTS_REQUEST_CODE, 0, _portNumber, buffer, buffer.Length, USB_WRITE_TIMEOUT_MILLIS);
+        int? result = _connection.ControlTransfer((UsbAddressing)REQTYPE_DEVICE_TO_HOST, SILABSER_GET_MDMSTS_REQUEST_CODE, 0, _portNumber, buffer, buffer.Length, USB_WRITE_TIMEOUT_MILLIS);
         if (result != buffer.Length)
         {
             throw new IOException("Control transfer failed: " + SILABSER_GET_MDMSTS_REQUEST_CODE + " / " + 0 + " -> " + result);
@@ -81,13 +89,18 @@ public sealed class Cp21XXSerialPort : CommonUsbSerialPort
 
     protected override void OpenInt()
     {
+        if (_connection == null)
+        {
+            throw new IOException("Connection closed");
+        }
+
         _isRestrictedPort = _device.InterfaceCount == 2 && _portNumber == 1;
         if (_portNumber >= _device.InterfaceCount)
         {
             throw new IOException("Unknown port number");
         }
         UsbInterface dataIface = _device.GetInterface(_portNumber);
-        if (!_connection?.ClaimInterface(dataIface, true) ?? false)
+        if (!_connection.ClaimInterface(dataIface, true))
         {
             throw new IOException("Could not claim interface " + _portNumber);
         }
@@ -133,6 +146,10 @@ public sealed class Cp21XXSerialPort : CommonUsbSerialPort
 
     private void SetBaudRate(int baudRate)
     {
+        if (_connection == null)
+        {
+            throw new IOException("Connection closed");
+        }
         byte[] data =
         [
             (byte)(baudRate & 0xff),
@@ -140,7 +157,7 @@ public sealed class Cp21XXSerialPort : CommonUsbSerialPort
             (byte)((baudRate >> 16) & 0xff),
             (byte)((baudRate >> 24) & 0xff)
         ];
-        int? ret = _connection?.ControlTransfer((UsbAddressing)REQTYPE_HOST_TO_DEVICE, SILABSER_SET_BAUDRATE, 0, _portNumber, data, 4, USB_WRITE_TIMEOUT_MILLIS);
+        int? ret = _connection.ControlTransfer((UsbAddressing)REQTYPE_HOST_TO_DEVICE, SILABSER_SET_BAUDRATE, 0, _portNumber, data, 4, USB_WRITE_TIMEOUT_MILLIS);
         if (ret < 0)
         {
             throw new IOException("Error setting baud rate");

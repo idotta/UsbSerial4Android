@@ -59,12 +59,16 @@ public sealed class CdcAcmSerialPort : CommonUsbSerialPort
 
     private void OpenSingleInterface()
     {
+        if (_connection == null)
+        {
+            throw new IOException("Connection closed");
+        }
         // the following code is inspired by the cdc-acm driver in the linux kernel
 
         _controlIndex = 0;
         _controlInterface = _device.GetInterface(0);
         _dataInterface = _device.GetInterface(0);
-        if (!_connection?.ClaimInterface(_controlInterface, true) ?? false)
+        if (!_connection.ClaimInterface(_controlInterface, true))
         {
             throw new IOException("Could not claim shared control/data interface");
         }
@@ -187,7 +191,11 @@ public sealed class CdcAcmSerialPort : CommonUsbSerialPort
 
     private int GetInterfaceIdFromDescriptors()
     {
-        var descriptors = _connection?.GetDescriptors() ?? throw new IOException("Invalid connection");
+        if (_connection == null)
+        {
+            throw new IOException("Connection closed");
+        }
+        var descriptors = _connection.GetDescriptors();
         Log.Debug(TAG, "USB descriptor:");
         foreach (var descriptor in descriptors)
         {
@@ -224,8 +232,11 @@ public sealed class CdcAcmSerialPort : CommonUsbSerialPort
 
     private int SendAcmControlMessage(int request, int value, byte[]? buf)
     {
-        int len = _connection?.ControlTransfer(
-                (UsbAddressing)USB_RT_ACM, request, value, _controlIndex, buf, buf != null ? buf.Length : 0, 5000) ?? -1;
+        if (_connection == null)
+        {
+            throw new IOException("Connection closed");
+        }
+        int len = _connection.ControlTransfer((UsbAddressing)USB_RT_ACM, request, value, _controlIndex, buf, buf != null ? buf.Length : 0, 5000);
         if (len < 0)
         {
             throw new IOException("controlTransfer failed");
