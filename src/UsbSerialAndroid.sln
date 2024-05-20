@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "driver", "driver", "{B808DA7B-5A07-4F29-8816-EF2025B122CB}"
 	ProjectSection(SolutionItems) = preProject
 		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\CdcAcmSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\CdcAcmSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\Ch34xSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\Ch34xSerialDriver.java
 		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ChromeCcdSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ChromeCcdSerialDriver.java
 		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\CommonUsbSerialPort.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\CommonUsbSerialPort.java
 		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ProbeTable.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ProbeTable.java
