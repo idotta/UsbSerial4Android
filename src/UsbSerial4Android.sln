@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34322.80
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UsbSerial4Android", "UsbSerial4Android\UsbSerial4Android.csproj", "{94F14AFC-E8B6-4A3F-87CA-1CAA2DA175A5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "usb-serial-for-android", "usb-serial-for-android", "{E9B93DB7-2022-465C-A2A9-2521A28D08BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "driver", "driver", "{B808DA7B-5A07-4F29-8816-EF2025B122CB}"
+	ProjectSection(SolutionItems) = preProject
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\CdcAcmSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\CdcAcmSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\Ch34xSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\Ch34xSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ChromeCcdSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ChromeCcdSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\CommonUsbSerialPort.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\CommonUsbSerialPort.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\Cp21xxSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\Cp21xxSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\FtdiSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\FtdiSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\GsmModemSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\GsmModemSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ProbeTable.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ProbeTable.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ProlificSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\ProlificSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\SerialTimeoutException.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\SerialTimeoutException.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\UsbId.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\UsbId.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\UsbSerialDriver.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\UsbSerialDriver.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\UsbSerialPort.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\UsbSerialPort.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\UsbSerialProber.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\driver\UsbSerialProber.java
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "util", "util", "{44B98217-0A4C-4DB1-A48B-B4B6642496C1}"
+	ProjectSection(SolutionItems) = preProject
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\util\HexDump.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\util\HexDump.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\util\MonotonicClock.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\util\MonotonicClock.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\util\SerialInputOutputManager.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\util\SerialInputOutputManager.java
+		..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\util\UsbUtils.java = ..\vendor\usb-serial-for-android\usbSerialForAndroid\src\main\java\com\hoho\android\usbserial\util\UsbUtils.java
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{94F14AFC-E8B6-4A3F-87CA-1CAA2DA175A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94F14AFC-E8B6-4A3F-87CA-1CAA2DA175A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94F14AFC-E8B6-4A3F-87CA-1CAA2DA175A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94F14AFC-E8B6-4A3F-87CA-1CAA2DA175A5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B808DA7B-5A07-4F29-8816-EF2025B122CB} = {E9B93DB7-2022-465C-A2A9-2521A28D08BC}
+		{44B98217-0A4C-4DB1-A48B-B4B6642496C1} = {E9B93DB7-2022-465C-A2A9-2521A28D08BC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4570C4D9-F968-47A3-8846-D2829FD904E6}
+	EndGlobalSection
+EndGlobal
